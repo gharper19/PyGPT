@@ -1,5 +1,7 @@
 import os
 import openai
+# import tiktoken
+
 
 '''
     # OpenAI API Python Library Reference: https://pypi.org/project/openai/
@@ -64,6 +66,10 @@ def showResponseContent(resp, showRaw=False):
         print(f"{MODEL} raw response:\n {resp}")
     else:
         print(f"{MODEL}:\n {content}")
+
+def exportMessageHistory():
+    '''Exports current message history as csv'''
+    pass
     
 def chat():  
     '''Chat loop'''
@@ -76,7 +82,7 @@ def chat():
     # Submit initial message history
     showResponseContent(submitCompletionMessage())
     
-    user_prompt = "\nEnter the word 'hist' to view history. Enter 'exit' to exit. Enter '?' if you want me to repeat myself." 
+    user_prompt = "\nEnter the word 'hist' to view history. Enter 'exit' to exit. Enter '?' for commands help." 
     print(user_prompt)
     while(True):
     # User input loop
