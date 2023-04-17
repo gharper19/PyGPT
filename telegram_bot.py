@@ -1,4 +1,6 @@
 import telebot
+import chat
+from chat import submitCompletionMessage, parseResponse
 import logging
 
 logging.basicConfig(
@@ -13,11 +15,23 @@ TELEGRAM_BOT_KEY = ""
 with open(TELEGRAM_BOT_KEY_FILEPATH) as f:
     TELEGRAM_BOT_KEY = f.readlines()[0]
 
-# Create bot
+# Initiate telegram bot
 bot = telebot.TeleBot(TELEGRAM_BOT_KEY)
 
 # Apply decorator 
 @bot.message_handler(func=lambda message: True) # func param is applied to every incoming msg to determine whether msg handler should trigger
+
+def handle_message(msg): 
+    ''' Gets user message text and submits content to GPT as a new user prompt '''
+    # Extract the text content of the message.
+    user_text = message.text
+
+    # Send user's message to the submitCompletionMessage function and get the response.
+    api_response = submitCompletionMessage('user', user_text)
+
+    # Send the API response back to the user as a reply.
+    bot.reply_to(message, api_response)
+
 def echo_message(message):
     response = "...But no one came..."
     bot.reply_to(message, response)
@@ -27,26 +41,3 @@ def run_bot():
 
 if __name__ == '__main__': 
     run_bot()
-
-'''
-# ---- ---- 
-
-# Define the function to handle incoming messages
-def message_handler(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="...But no one came...")
-
-# Set up the bot using the API token
-TOKEN = TELEGRAM_BOT_KEY
-bot = telegram.Bot(token=TOKEN)
-
-# Set up the updater and dispatcher
-updater = Updater(bot)
-dispatcher = updater.dispatcher
-
-# Add the message handler to the dispatcher
-dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, message_handler))
-
-# Start the bot
-updater.start_polling()
-updater.idle()
-'''

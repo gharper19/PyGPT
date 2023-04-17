@@ -21,6 +21,9 @@ import openai
 
 MODEL="gpt-3.5-turbo" # "gpt-4"
 SYSTEM_PROMPT = "You are a helpful assistant focused on providing as much detail and context on topics as possible."
+SYSTEM_PROMPTS = [ # List of initial System prompts
+    "You are a helpful assistant focused on providing as much detail and context on topics as possible."
+]
 
 OPENAI_API_KEY_FILEPATH = "..\openai_api_key.txt"
 OPENAI_API_KEY = ""
@@ -71,6 +74,9 @@ def exportMessageHistory():
     '''Exports current message history as csv'''
     pass
     
+def initializeCompletionBot(system_messages=SYSTEM_PROMPT, ):
+    pass
+
 def chat():  
     '''Chat loop'''
 
@@ -82,8 +88,10 @@ def chat():
     # Submit initial message history
     showResponseContent(submitCompletionMessage())
     
+    # Prompt user for input
     user_prompt = "\nEnter the word 'hist' to view history. Enter 'exit' to exit. Enter '?' for commands help." 
     print(user_prompt)
+    
     while(True):
     # User input loop
         user_input = input("user: ")
@@ -99,4 +107,3 @@ def chat():
 
 if __name__ == "__main__":
     chat()
-
