@@ -1,11 +1,4 @@
-import telegram
-from telegram.ext.updater import Updater
-from telegram.update import Update  # will invoke every time a bot receives an update
-from telegram.ext.callbackcontext import CallbackContext # required when adding the dispatcher
-from telegram.ext.commandhandler import CommandHandler # used to handle any command sent by the user
-from telegram.ext.messagehandler import MessageHandler 
-from telegram.ext.filters import Filters
-
+import telebot
 import logging
 
 logging.basicConfig(
@@ -20,16 +13,17 @@ TELEGRAM_BOT_KEY = ""
 with open(TELEGRAM_BOT_KEY_FILEPATH) as f:
     TELEGRAM_BOT_KEY = f.readlines()[0]
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="...")
+# Create bot
+bot = telebot.TeleBot(TELEGRAM_BOT_KEY)
+
+# Apply decorator 
+@bot.message_handler(func=lambda message: True) # func param is applied to every incoming msg to determine whether msg handler should trigger
+def echo_message(message):
+    response = "...But no one came..."
+    bot.reply_to(message, response)
 
 def run_bot():
-    application = ApplicationBuilder().token(TELEGRAM_BOT_KEY).build()
-    
-    start_handler = CommandHandler('start', start)
-    application.add_handler(start_handler)
-    
-    application.run_polling()
+    bot.polling(none_stop=True)
 
 if __name__ == '__main__': 
     run_bot()
