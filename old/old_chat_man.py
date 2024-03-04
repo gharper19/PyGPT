@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 import logging
-import pprint
 
 import openai
 # import tiktoken
@@ -29,20 +28,15 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-class ChatCompletionBot:
-    def __init__(
-            self, 
-            OPENAI_API_KEY="",
-            MODEL="gpt-3.5-turbo" #"gtp-4"
-            SYSTEM_PROMPTS= [ # Set initial assistant behavior
-            "You are a helpful assistant focused on providing as much detail and context on topics as possible."
-            ],
+class GPTChatCompletion:
+    def __init__(self, OPENAI_API_KEY="",   model="gpt-4", #"gpt-3.5-turbo", 
+                 system_prompts= [ # Set initial assistant behavior
+                    "You are a helpful assistant focused on providing as much detail and context on topics as possible. Some questions will be very straight forward and have a simple, factual answer. Other questions will require you to request details from the user. Ask as many clarifying questions as you need to give an accurate answer. When you give a response, provide a percentage repesenting your confidence in your answer."
+                    ]):
 
-            ):
-        
-        
-        self.MODEL = MODEL
-        self.SYSTEM_PROMPTS = SYSTEM_PROMPTS
+        assert model in {"text-davinci-003", "gpt-3.5-turbo", "gpt-4"}, f"Unrecognized model: {model}"
+        self.model = model
+        self.system_prompts = system_prompts
         
         # Set API key
         if OPENAI_API_KEY == "":
@@ -57,14 +51,12 @@ class ChatCompletionBot:
             # Assistant messages store prior responses and can give examples of desired behavior
         ]
 
-        for msg in SYSTEM_PROMPTS:
+        for msg in system_prompts:
             # Upate message history with initial system messages
-            updateMessageHistory(role="system", content: msg)
+            self.updateMessageHistory(role="system", content= msg)
 
     def updateMessageHistory(self, message_history=[], role="", content="", overwrite=False):
         '''Updates bot message history with provided list of {role, content} entries, appends by default. Adds additional entry on the end if role and content are provided. '''
-        global message_history
-        
         # Add or overwrite message history entries
         if len(message_history) > 0:
             if overwrite: self.message_history = message_history
@@ -82,7 +74,7 @@ class ChatCompletionBot:
         
         # Request completion and return response
         response = openai.ChatCompletion.create(
-            model=self.MODEL,
+            model=self.model,
             messages=self.message_history
         )
         return response
@@ -90,9 +82,7 @@ class ChatCompletionBot:
     def parseCompletionResponse(self, resp):
         '''Parses openai response for role and content and returns as output'''
         # Parse role and content
-        role, content = 
-            resp['choices'][0]['message']['role'], 
-            resp['choices'][0]['message']['content']
+        role, content = resp['choices'][0]['message']['role'], resp['choices'][0]['message']['content']
         return role, content
 
     def sendMessage(self, role, content, updateHistory=True, rawResponse=False):
@@ -109,6 +99,7 @@ class ChatCompletionBot:
         else: return role, content
 
     def getMessageHistory(self, format=False):
+        '''Returns message history'''
         if format: 
             return self.message_history
         else:
@@ -118,26 +109,26 @@ class ChatCompletionBot:
         '''Exports current message history to file. Uses timestamp if no name is provided.'''
         # Set filename
         if filename == "": 
-            filename=f"{datetime.now().strftime(prependTimestamp)}_{self.MODEL}_msg-log.{filetype}"
-        else if prependTimestamp: 
+            filename=f"{datetime.now().strftime(prependTimestamp)}_{self.model}_msg-log.{filetype}"
+        elif (prependTimestamp): 
             filename=f"{datetime.now().strftime(prependTimestamp)}_{filename}.{filetype}"
         else: filename=f"{filename}.{filetype}"
 
         # Write message history to file
         with open(filename, "r+") as exportFile: 
-            try
+            try:
                 if format:
                     exportFile.writelines(getMessageHistory(format=True))
                 else: 
                     exportFile.writelines(getMessageHistory)
                 result= f"Successfully exported message history to {filename}"
                 logging.INFO(result)
-            catch(Exception e):
+            except Exception as e:
                 result = f"Export to '{filename}' failed: {e}"
                 logging.ERROR(result)
         return result
 
-    def runChatLoop(self):
+    def runConsoleChatLoop(self):
         # Submit initial message history
         self.showResponseContent(self.submitCompletionMessage())
 
@@ -160,6 +151,5 @@ class ChatCompletionBot:
                 user_input = ""
 
 if __name__ == "__main__":
-    bot = ChatCompletionBot()
-    bot.runChatLoop()
-
+    bot = GPTChatCompletion()
+    bot.runConsoleChatLoop()
